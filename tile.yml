@@ -6,10 +6,10 @@ description: Send BOSH VM Health logs to the Firehose
 packages:
 - name: loggregator
   type: bosh-release
-  path: https://bosh.io/d/github.com/cloudfoundry/loggregator
+  path: https://bosh.io/d/github.com/cloudfoundry/loggregator?v=65
 - name: bosh-hm-forwarder
   type: bosh-release
-  path: https://bosh.io/d/github.com/cloudfoundry/bosh-hm-forwarder-release
+  path: https://bosh.io/d/github.com/cloudfoundry/bosh-hm-forwarder-release?v=1.0.11
   jobs:
   - name: hm-forwarder
     templates:
