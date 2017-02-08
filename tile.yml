@@ -1,5 +1,5 @@
 ---
-name: bosh-hm-forwarder-tile
+name: bosh-hm-forwarder
 icon_file: resources/icon.png
 label: HM Forwarder
 description: Send BOSH VM Health logs to the Firehose
@@ -26,7 +26,6 @@ packages:
     instance_definition:
       configurable: false
       default: 1
-  manifest: |
     properties:
       boshhmforwarder:
         incoming_port: 13321
