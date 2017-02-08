@@ -1,3 +1,4 @@
 product/
 release/
 *.tgz
+.DS_Store
