@@ -1,0 +1,45 @@
+---
+name: bosh-hm-forwarder-tile 
+icon_file: resources/icon.png
+label: HM Forwarder
+description: Send BOSH VM Health logs to the Firehose
+packages:
+- name: bosh-hm-forwarder
+  type: bosh-release
+  label: HM Forwarder
+  path: resources/bosh-hm-forwarder-v1.0.11.tgz
+  jobs:
+  - name: hm-forwarder
+    templates:
+    - name: boshhmforwarder
+      release: bosh-hm-forwarder
+    - name: metron_agent
+      release: loggregator
+    memory: 4096
+    ephemeral_disk: 8192
+    cpu: 2
+    static_ip: 1
+    dynamic_ip: 0
+    single_az_only: true
+    instance_definition:
+      configurable: false
+      default: 1
+  manifest: |
+    properties:
+      boshhmforwarder:
+        incoming_port: 13321
+      loggregator_endpoint:
+        shared_secret: (( ..cf.doppler.shared_secret_credentials.password ))
+      metron_endpoint:
+        shared_secret: (( ..cf.doppler.shared_secret_credentials.password ))
+      metron_agent:
+        deployment: cf
+      loggregator:
+        etcd:
+          machines: (( ..cf.etcd_server.ips ))
+
+requires_product_versions:
+- name: cf
+  version: '~> 1.8'
+- name: loggregator
+  version: '>= 55'
