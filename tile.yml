@@ -34,6 +34,7 @@ packages:
         shared_secret: (( ..cf.doppler.shared_secret_credentials.password ))
       metron_agent:
         deployment: cf
+        zone: (( availability_zone ))
       loggregator:
         etcd:
           machines: (( ..cf.etcd_server.ips ))
