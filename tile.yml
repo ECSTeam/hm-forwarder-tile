@@ -12,6 +12,7 @@ packages:
   path: https://bosh.io/d/github.com/cloudfoundry/bosh-hm-forwarder-release?v=1.0.11
   jobs:
   - name: hm-forwarder
+    label: HM Forwarder
     templates:
     - name: boshhmforwarder
       release: bosh-hm-forwarder
@@ -23,9 +24,7 @@ packages:
     static_ip: 1
     dynamic_ip: 0
     single_az_only: true
-    instance_definition:
-      configurable: false
-      default: 1
+    singleton: true
     properties:
       boshhmforwarder:
         incoming_port: 13321
@@ -41,4 +40,4 @@ packages:
 
 requires_product_versions:
 - name: cf
-  version: '~> 1.8'
+  version: '~> 1.7'
