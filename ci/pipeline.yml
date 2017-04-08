@@ -40,7 +40,6 @@ jobs:
       inputs:
       - name: tile-source
       - name: version
-      - name: nozzle-release
 
       outputs:
       - name: build-output
