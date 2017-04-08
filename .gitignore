@@ -2,3 +2,4 @@ product/
 release/
 *.tgz
 .DS_Store
+tile-history.yml

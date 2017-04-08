@@ -1,15 +1,29 @@
+# Copyright 2017 ECS Team, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 ---
 name: bosh-hm-forwarder
 icon_file: resources/icon.png
 label: HM Forwarder
 description: Send BOSH VM Health logs to the Firehose
+metadata_version: '1.8'
 packages:
 - name: loggregator
   type: bosh-release
-  path: https://bosh.io/d/github.com/cloudfoundry/loggregator?v=65
+  path: https://bosh.io/d/github.com/cloudfoundry/loggregator?v=82
 - name: bosh-hm-forwarder
   type: bosh-release
-  path: https://bosh.io/d/github.com/cloudfoundry/bosh-hm-forwarder-release?v=1.0.11
+  path: https://bosh.io/d/github.com/cloudfoundry/bosh-hm-forwarder-release?v=1.0.12
   jobs:
   - name: hm-forwarder
     label: HM Forwarder
@@ -34,11 +48,36 @@ packages:
         shared_secret: (( ..cf.doppler.shared_secret_credentials.password ))
       metron_agent:
         deployment: cf
-        zone: (( availability_zone ))
+        etcd:
+          client_cert: "(( .properties.metrics_tls_disabled.value ? .properties.null_string.value : ..cf.properties.cf_etcd_client_cert.cert_pem ))"
+          client_key: "(( .properties.metrics_tls_disabled.value ? .properties.null_string.value : ..cf.properties.cf_etcd_client_cert.private_key_pem ))"
       loggregator:
         etcd:
-          machines: (( ..cf.etcd_server.ips ))
-
+          require_ssl: "(( .properties.metrics_tls_disabled.value ? .properties.false_boolean.value : .properties.true_boolean.value ))"
+          machines: "(( .properties.metrics_tls_disabled.value ? ..cf.etcd_server.ips : .properties.etcd_machines.parsed_strings ))"
+          ca_cert: (( $ops_manager.ca_certificate ))
+properties:
+- name: null_string
+  type: string
+  default:
+- name: etcd_machines
+  type: string_list
+  default: cf-etcd.service.cf.internal
+- name: true_boolean
+  type: boolean
+  default: true
+- name: false_boolean
+  type: boolean
+  default: false
+forms:
+- name: metrics
+  label: Metrics
+  properties:
+  - name: metrics_tls_disabled
+    label: Use non-secure communication for metrics
+    description: Uncheck this on PCF1.10 or later
+    type: boolean
+    default: true
 requires_product_versions:
 - name: cf
-  version: '~> 1.7'
+  version: '~> 1.8'

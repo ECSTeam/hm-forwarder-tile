@@ -1,0 +1,73 @@
+---
+resources:
+- name: tile-release
+  type: github-release
+  source:
+    user: ECSTeam
+    repository: hm-forwarder-tile
+    access_token: {{github-access-token}}
+- name: version
+  type: semver
+  source:
+    driver: git
+    uri: git@github.com:ECSTeam/hm-forwarder-tile.git
+    branch: version
+    file: version
+    private_key: {{github-private-key}}
+    initial_version: 0.1.0
+- name: tile-source
+  type: git
+  source:
+    uri: git@github.com:ECSTeam/hm-forwarder-tile.git
+    branch: master
+    private_key: {{github-private-key}}
+
+jobs:
+- name: build-tile
+  public: true
+  plan:
+  - get: tile-source
+    trigger: true
+  - get: version
+  - task: build-tile
+    config:
+      platform: linux
+
+      image_resource:
+        type: docker-image
+        source: { repository: cfplatformeng/tile-generator }
+
+      inputs:
+      - name: tile-source
+      - name: version
+      - name: nozzle-release
+
+      outputs:
+      - name: build-output
+
+      run:
+        path: tile-source/ci/tasks/build-tile.sh
+  - put: tile-release
+    params:
+      name: version/number
+      tag: version/number
+      tag_prefix: v
+      globs:
+      - build-output/*.pivotal
+  - put: version
+    params:
+      bump: patch
+- name: bump-minor
+  public: true
+  plan:
+  - get: version
+    params: { bump: minor }
+  - put: version
+    params: { file: version/number }
+- name: bump-major
+  public: true
+  plan:
+  - get: version
+    params: { bump: major }
+  - put: version
+    params: { file: version/number }
