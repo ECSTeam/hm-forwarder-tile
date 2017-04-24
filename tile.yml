@@ -23,7 +23,7 @@ packages:
   path: https://bosh.io/d/github.com/cloudfoundry-incubator/consul-release?v=152
 - name: loggregator
   type: bosh-release
-  path: https://bosh.io/d/github.com/cloudfoundry/loggregator?v=84
+  path: https://bosh.io/d/github.com/cloudfoundry/loggregator?v=65
 - name: bosh-hm-forwarder
   type: bosh-release
   path: https://bosh.io/d/github.com/cloudfoundry/bosh-hm-forwarder-release?v=1.0.12
@@ -53,11 +53,13 @@ packages:
         shared_secret: (( ..cf.doppler.shared_secret_credentials.password ))
       metron_agent:
         deployment: cf
+        etcd:
+          client_cert: "(( .properties.metrics_tls_disabled.value ? .properties.null_string.value : ..cf.properties.cf_etcd_client_cert.cert_pem ))"
+          client_key: "(( .properties.metrics_tls_disabled.value ? .properties.null_string.value : ..cf.properties.cf_etcd_client_cert.private_key_pem ))"
       loggregator:
-        tls:
-          metron:
-            key: (( ..cf.doppler.metron_tls_cert.private_key_pem ))
-            cert: (( ..cf.doppler.metron_tls_cert.cert_pem ))
+        etcd:
+          require_ssl: "(( .properties.metrics_tls_disabled.value ? .properties.false_boolean.value : .properties.true_boolean.value ))"
+          machines: "(( .properties.metrics_tls_disabled.value ? ..cf.etcd_server.ips : .properties.etcd_machines.parsed_strings ))"
           ca_cert: (( $ops_manager.ca_certificate ))
       consul:
         encrypt_keys:
