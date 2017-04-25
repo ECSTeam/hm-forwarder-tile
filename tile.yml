@@ -87,6 +87,16 @@ properties:
 - name: false_boolean
   type: boolean
   default: false
+
+forms:
+- name: metrics
+  label: Metrics
+  properties:
+  - name: metrics_tls_disabled
+    label: Use non-secure communication for metrics
+    description: Uncheck this on PCF1.10 or later
+    type: boolean
+    default: true
 requires_product_versions:
 - name: cf
   version: '~> 1.8'
