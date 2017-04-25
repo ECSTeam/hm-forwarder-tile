@@ -74,6 +74,19 @@ packages:
           mode: server
           servers:
             lan: (( ..cf.consul_server.ips ))
+properties:
+- name: null_string
+  type: string
+  default:
+- name: etcd_machines
+  type: string_list
+  default: cf-etcd.service.cf.internal
+- name: true_boolean
+  type: boolean
+  default: true
+- name: false_boolean
+  type: boolean
+  default: false
 requires_product_versions:
 - name: cf
   version: '~> 1.8'
