@@ -13,7 +13,7 @@ Installs the BOSH HM Forwarder Release
 
 ## Supported Versions
 
-1.8+ are supported via ongoing development. If you wish to use with PCF 1.7, you must use version 0.1.2 of the tile.
+This version of the tile is compatable with PCF 1.11.
 
 ## More Information
 
