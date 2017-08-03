@@ -13,7 +13,7 @@ Installs the BOSH HM Forwarder Release
 
 ## Supported Versions
 
-This version of the tile is compatable to PCF 1.11.
+This version of the tile is compatable with PCF 1.11.
 
 ## More Information
 
