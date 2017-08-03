@@ -1,29 +1,15 @@
-# Copyright 2017 ECS Team, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 ---
 name: bosh-hm-forwarder
 icon_file: resources/icon.png
 label: HM Forwarder
 description: Send BOSH VM Health logs to the Firehose
-metadata_version: '1.8'
 packages:
 - name: consul
   type: bosh-release
   path: https://bosh.io/d/github.com/cloudfoundry-incubator/consul-release?v=152
 - name: loggregator
   type: bosh-release
-  path: https://bosh.io/d/github.com/cloudfoundry/loggregator?v=65
+  path: https://bosh.io/d/github.com/cloudfoundry/loggregator?v=89.1
 - name: bosh-hm-forwarder
   type: bosh-release
   path: https://bosh.io/d/github.com/cloudfoundry/bosh-hm-forwarder-release?v=1.0.12
@@ -52,51 +38,34 @@ packages:
       metron_endpoint:
         shared_secret: (( ..cf.doppler.shared_secret_credentials.password ))
       metron_agent:
-        deployment: cf
+        deployment: boshhmforwarder
         etcd:
-          client_cert: "(( .properties.metrics_tls_disabled.value ? .properties.null_string.value : ..cf.properties.cf_etcd_client_cert.cert_pem ))"
-          client_key: "(( .properties.metrics_tls_disabled.value ? .properties.null_string.value : ..cf.properties.cf_etcd_client_cert.private_key_pem ))"
+          client_cert: (( ..cf.properties.cf_etcd_client_cert.cert_pem ))
+          client_key: (( ..cf.properties.cf_etcd_client_cert.private_key_pem ))
       loggregator:
         etcd:
-          require_ssl: "(( .properties.metrics_tls_disabled.value ? .properties.false_boolean.value : .properties.true_boolean.value ))"
-          machines: "(( .properties.metrics_tls_disabled.value ? ..cf.etcd_server.ips : .properties.etcd_machines.parsed_strings ))"
+          require_ssl: true
+          machines:
+          - cf-etcd.service.cf.internal
           ca_cert: (( $ops_manager.ca_certificate ))
+        tls:
+          ca_cert: (( $ops_manager.ca_certificate ))
+          doppler:
+            cert: (( ..cf.doppler.doppler_tls_cert.cert_pem ))
+            key: (( ..cf.doppler.doppler_tls_cert.private_key_pem ))
+          metron:
+            cert: (( ..cf.doppler.metron_tls_cert.cert_pem ))
+            key: (( ..cf.doppler.metron_tls_cert.private_key_pem ))
+          syslogdrainbinder:
+            cert: (( ..cf.doppler.syslogdrainbinder_tls_cert.cert_pem ))
+            key: (( ..cf.doppler.syslogdrainbinder_tls_cert.private_key_pem ))
       consul:
         encrypt_keys:
         - (( ..cf.properties.consul_encrypt_key.value ))
         ca_cert: (( $ops_manager.ca_certificate ))
-        server_cert: (( ..cf.properties.consul_server_cert.cert_pem ))
-        server_key: (( ..cf.properties.consul_server_cert.private_key_pem ))
         agent_cert: (( ..cf.properties.consul_agent_cert.cert_pem ))
         agent_key: (( ..cf.properties.consul_agent_cert.private_key_pem ))
         agent:
           domain: cf.internal
-          mode: server
           servers:
             lan: (( ..cf.consul_server.ips ))
-properties:
-- name: null_string
-  type: string
-  default:
-- name: etcd_machines
-  type: string_list
-  default: cf-etcd.service.cf.internal
-- name: true_boolean
-  type: boolean
-  default: true
-- name: false_boolean
-  type: boolean
-  default: false
-
-forms:
-- name: metrics
-  label: Metrics
-  properties:
-  - name: metrics_tls_disabled
-    label: Use non-secure communication for metrics
-    description: Uncheck this on PCF1.10 or later
-    type: boolean
-    default: true
-requires_product_versions:
-- name: cf
-  version: '~> 1.8'
